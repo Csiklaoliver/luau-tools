@@ -1,0 +1,161 @@
+{
+  "name": "luau-tools",
+  "displayName": "Luau Tools",
+  "description": "Full Luau developer experience outside Roblox Studio — syntax highlighting, type checking, autocomplete, and more.",
+  "version": "0.1.0",
+  "publisher": "csiklaoliver",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/csiklaoliver/luau-tools.git"
+  },
+  "bugs": {
+    "url": "https://github.com/csiklaoliver/luau-tools/issues"
+  },
+  "homepage": "https://github.com/csiklaoliver/luau-tools#readme",
+  "icon": "icon.png",
+  "galleryBanner": {
+    "color": "#1a1a2e",
+    "theme": "dark"
+  },
+  "engines": {
+    "vscode": "^1.85.0",
+    "node": ">=18"
+  },
+  "categories": [
+    "Programming Languages",
+    "Linters",
+    "Formatters",
+    "Other"
+  ],
+  "keywords": [
+    "luau",
+    "lua",
+    "roblox",
+    "type-checking",
+    "lsp",
+    "language-server",
+    "syntax-highlighting"
+  ],
+  "activationEvents": [
+    "onLanguage:luau",
+    "onLanguage:lua",
+    "workspaceContains:**/*.luau",
+    "workspaceContains:.luaurc"
+  ],
+  "main": "./out/extension.js",
+  "contributes": {
+    "languages": [
+      {
+        "id": "luau",
+        "aliases": [
+          "Luau",
+          "luau"
+        ],
+        "extensions": [
+          ".luau",
+          ".lua"
+        ],
+        "configuration": "./language-configuration.json"
+      }
+    ],
+    "grammars": [
+      {
+        "language": "luau",
+        "scopeName": "source.luau",
+        "path": "./syntaxes/luau.tmLanguage.json"
+      }
+    ],
+    "configuration": {
+      "type": "object",
+      "title": "Luau Tools",
+      "properties": {
+        "luau-tools.luauVersion": {
+          "type": "string",
+          "default": "latest",
+          "description": "Version of luau-lsp to use. Set to 'latest' for the most recent release, or specify a version like '1.32.0'."
+        },
+        "luau-tools.lspPath": {
+          "type": "string",
+          "default": "",
+          "description": "Path to a custom luau-lsp binary. Leave empty to use the auto-downloaded binary."
+        },
+        "luau-tools.diagnosticsEnabled": {
+          "type": "boolean",
+          "default": true,
+          "description": "Enable real-time error diagnostics from luau-lsp."
+        },
+        "luau-tools.completion": {
+          "type": "object",
+          "properties": {
+            "enabled": {
+              "type": "boolean",
+              "default": true,
+              "description": "Enable autocomplete suggestions."
+            }
+          },
+          "default": {
+            "enabled": true
+          }
+        },
+        "luau-tools.trace.server": {
+          "type": "string",
+          "enum": [
+            "off",
+            "messages",
+            "verbose"
+          ],
+          "default": "off",
+          "description": "Trace LSP communication for debugging."
+        }
+      }
+    },
+    "commands": [
+      {
+        "command": "luau-tools.restartServer",
+        "title": "Luau: Restart Language Server",
+        "category": "Luau"
+      },
+      {
+        "command": "luau-tools.showOutput",
+        "title": "Luau: Show Output",
+        "category": "Luau"
+      },
+      {
+        "command": "luau-tools.checkCurrentFile",
+        "title": "Luau: Check Current File",
+        "category": "Luau"
+      },
+      {
+        "command": "luau-tools.updateLsp",
+        "title": "Luau: Update luau-lsp",
+        "category": "Luau"
+      }
+    ],
+    "menus": {
+      "commandPalette": [
+        {
+          "command": "luau-tools.checkCurrentFile",
+          "when": "editorLangId == luau"
+        }
+      ]
+    }
+  },
+  "scripts": {
+    "vscode:prepublish": "npm run build",
+    "build": "tsc -p tsconfig.json",
+    "watch": "tsc -watch -p tsconfig.json",
+    "clean": "rm -rf out",
+    "package": "vsce package",
+    "publish": "vsce publish"
+  },
+  "dependencies": {
+    "vscode-languageclient": "^9.0.1"
+  },
+  "devDependencies": {
+    "@types/node": "^20.12.7",
+    "@types/vscode": "^1.85.0",
+    "@vscode/vsce": "^2.26.0",
+    "typescript": "^5.4.5"
+  }
+}

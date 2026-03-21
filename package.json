@@ -1,0 +1,20 @@
+{
+  "name": "luau-tools-workspace",
+  "private": true,
+  "workspaces": [
+    "cli",
+    "vscode-extension"
+  ],
+  "engines": {
+    "node": ">=18"
+  },
+  "scripts": {
+    "build": "npm run build --workspaces",
+    "lint": "npm run lint --workspaces --if-present",
+    "test": "npm run test --workspaces --if-present",
+    "clean": "npm run clean --workspaces --if-present"
+  },
+  "devDependencies": {
+    "typescript": "^5.4.5"
+  }
+}

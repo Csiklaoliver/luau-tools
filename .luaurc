@@ -1,0 +1,16 @@
+{
+  "languageMode": "strict",
+  "lint": {
+    "UnusedVariable": "warning",
+    "UnreachableCode": "error",
+    "ImplicitReturn": "warning",
+    "LocalShadow": "warning",
+    "SameLineStatement": "warning",
+    "MultiLineStatement": "warning",
+    "ConfusingAndOr": "warning",
+    "FormatString": "warning"
+  },
+  "aliases": {
+    "@src": "./src"
+  }
+}

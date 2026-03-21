@@ -1,0 +1,193 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - "v*.*.*"
+
+permissions:
+  contents: write
+
+jobs:
+  # ─────────────────────────────────────────────
+  # 1. Build & test
+  # ─────────────────────────────────────────────
+  build:
+    name: Build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "npm"
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build all workspaces
+        run: npm run build
+
+      - name: Upload CLI build artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: cli-dist
+          path: cli/dist/
+          retention-days: 1
+
+      - name: Upload extension build artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: extension-out
+          path: vscode-extension/out/
+          retention-days: 1
+
+  # ─────────────────────────────────────────────
+  # 2. Publish CLI to npm
+  # ─────────────────────────────────────────────
+  publish-npm:
+    name: Publish to npm
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js with npm registry
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          registry-url: "https://registry.npmjs.org"
+          cache: "npm"
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Download CLI dist
+        uses: actions/download-artifact@v4
+        with:
+          name: cli-dist
+          path: cli/dist/
+
+      - name: Extract version from tag
+        id: version
+        run: echo "VERSION=${GITHUB_REF_NAME#v}" >> "$GITHUB_OUTPUT"
+
+      - name: Set package version
+        run: |
+          cd cli
+          npm version "${{ steps.version.outputs.VERSION }}" --no-git-tag-version
+
+      - name: Publish to npm
+        run: npm publish --workspace=cli --access=public
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+  # ─────────────────────────────────────────────
+  # 3. Package & publish VS Code extension
+  # ─────────────────────────────────────────────
+  publish-vscode:
+    name: Publish VS Code Extension
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "npm"
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Download extension build
+        uses: actions/download-artifact@v4
+        with:
+          name: extension-out
+          path: vscode-extension/out/
+
+      - name: Extract version from tag
+        id: version
+        run: echo "VERSION=${GITHUB_REF_NAME#v}" >> "$GITHUB_OUTPUT"
+
+      - name: Set extension version
+        run: |
+          cd vscode-extension
+          npm version "${{ steps.version.outputs.VERSION }}" --no-git-tag-version
+
+      - name: Package extension
+        run: |
+          cd vscode-extension
+          npx vsce package
+
+      - name: Publish to VS Code Marketplace
+        run: |
+          cd vscode-extension
+          npx vsce publish --pat "${{ secrets.VSCE_TOKEN }}"
+
+      - name: Upload .vsix artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: vsix-package
+          path: vscode-extension/*.vsix
+          retention-days: 30
+
+  # ─────────────────────────────────────────────
+  # 4. Create GitHub Release
+  # ─────────────────────────────────────────────
+  github-release:
+    name: Create GitHub Release
+    needs: [publish-npm, publish-vscode]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Download .vsix artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: vsix-package
+          path: ./release-assets/
+
+      - name: Generate release notes
+        id: notes
+        run: |
+          VERSION="${GITHUB_REF_NAME}"
+          cat <<EOF > release_notes.md
+          ## ${VERSION}
+
+          ### Install
+
+          **VS Code Extension**
+          \`\`\`
+          ext install csiklaoliver.luau-tools
+          \`\`\`
+
+          **CLI**
+          \`\`\`bash
+          npm install -g luau-tools@${VERSION#v}
+          \`\`\`
+
+          ### Changelog
+          See [CHANGELOG.md](https://github.com/csiklaoliver/luau-tools/blob/main/CHANGELOG.md) for details.
+          EOF
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          name: ${{ github.ref_name }}
+          body_path: release_notes.md
+          files: |
+            release-assets/*.vsix
+          draft: false
+          prerelease: ${{ contains(github.ref_name, '-') }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
