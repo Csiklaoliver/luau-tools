@@ -1,7 +1,7 @@
 {
   "name": "luau-tools",
   "displayName": "Luau Tools",
-  "description": "Full Luau developer experience outside Roblox Studio — syntax highlighting, type checking, autocomplete, and more.",
+  "description": "Full Luau developer experience outside Roblox Studio — syntax highlighting, type checking, autocomplete, Rojo sync, and more.",
   "version": "0.1.0",
   "publisher": "csiklaoliver",
   "license": "MIT",
@@ -32,16 +32,19 @@
     "luau",
     "lua",
     "roblox",
+    "rojo",
     "type-checking",
     "lsp",
     "language-server",
-    "syntax-highlighting"
+    "syntax-highlighting",
+    "studio-sync"
   ],
   "activationEvents": [
     "onLanguage:luau",
     "onLanguage:lua",
     "workspaceContains:**/*.luau",
-    "workspaceContains:.luaurc"
+    "workspaceContains:.luaurc",
+    "workspaceContains:default.project.json"
   ],
   "main": "./out/extension.js",
   "contributes": {
@@ -107,6 +110,33 @@
           ],
           "default": "off",
           "description": "Trace LSP communication for debugging."
+        },
+        "luau-tools.rojo.enabled": {
+          "type": "boolean",
+          "default": true,
+          "description": "Enable Rojo integration. When disabled, all Rojo commands are unavailable."
+        },
+        "luau-tools.rojo.autoStart": {
+          "type": "boolean",
+          "default": false,
+          "description": "Automatically start Rojo serve when a workspace with default.project.json is opened."
+        },
+        "luau-tools.rojo.port": {
+          "type": "number",
+          "default": 34872,
+          "minimum": 1024,
+          "maximum": 65535,
+          "description": "Port for Rojo to listen on. Must match the port configured in the Roblox Studio Rojo plugin."
+        },
+        "luau-tools.rojo.rojoPath": {
+          "type": "string",
+          "default": "",
+          "description": "Path to a custom Rojo binary. Leave empty to use the auto-downloaded binary stored in ~/.luau-tools/bin/."
+        },
+        "luau-tools.rojo.projectFile": {
+          "type": "string",
+          "default": "default.project.json",
+          "description": "Name of the Rojo project file to pass to 'rojo serve'. Relative to the workspace root."
         }
       }
     },
@@ -130,6 +160,36 @@
         "command": "luau-tools.updateLsp",
         "title": "Luau: Update luau-lsp",
         "category": "Luau"
+      },
+      {
+        "command": "luau-tools.rojoStart",
+        "title": "Luau: Start Rojo Sync",
+        "category": "Luau"
+      },
+      {
+        "command": "luau-tools.rojoStop",
+        "title": "Luau: Stop Rojo Sync",
+        "category": "Luau"
+      },
+      {
+        "command": "luau-tools.rojoRestart",
+        "title": "Luau: Restart Rojo Sync",
+        "category": "Luau"
+      },
+      {
+        "command": "luau-tools.rojoInit",
+        "title": "Luau: Init Rojo Project",
+        "category": "Luau"
+      },
+      {
+        "command": "luau-tools.rojoShowOutput",
+        "title": "Luau: Show Rojo Output",
+        "category": "Luau"
+      },
+      {
+        "command": "luau-tools.rojoUpdate",
+        "title": "Luau: Update Rojo",
+        "category": "Luau"
       }
     ],
     "menus": {
@@ -137,6 +197,10 @@
         {
           "command": "luau-tools.checkCurrentFile",
           "when": "editorLangId == luau"
+        },
+        {
+          "command": "luau-tools.rojoStop",
+          "when": "luau-tools.rojoRunning"
         }
       ]
     }
