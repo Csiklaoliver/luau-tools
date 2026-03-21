@@ -130,117 +130,136 @@ async function showRojoQuickPick(): Promise<void> {
 export async function activate(
   context: vscode.ExtensionContext
 ): Promise<void> {
-  // ── Output channels ─────────────────────────────────────────────────────────
+  // ── Output channels — created first so we can log errors ────────────────────
   const lspOutputChannel = vscode.window.createOutputChannel("Luau");
   const rojoOutputChannel = vscode.window.createOutputChannel("Luau (Rojo)");
   context.subscriptions.push(lspOutputChannel, rojoOutputChannel);
 
   lspOutputChannel.appendLine("[luau-tools] Extension activating...");
 
-  // ── LSP status bar (left side) ───────────────────────────────────────────────
-  lspStatusBarItem = vscode.window.createStatusBarItem(
-    vscode.StatusBarAlignment.Left,
-    11
-  );
-  lspStatusBarItem.command = "luau-tools.showOutput";
-  context.subscriptions.push(lspStatusBarItem);
-
-  // ── Rojo status bar (right of LSP) ──────────────────────────────────────────
-  rojoStatusBarItem = vscode.window.createStatusBarItem(
-    vscode.StatusBarAlignment.Left,
-    10
-  );
-  rojoStatusBarItem.command = "luau-tools.rojoQuickPick";
-  context.subscriptions.push(rojoStatusBarItem);
-
-  // ── Register the quick-pick command for Rojo status bar ─────────────────────
-  context.subscriptions.push(
-    vscode.commands.registerCommand(
-      "luau-tools.rojoQuickPick",
-      showRojoQuickPick
-    )
-  );
-
-  // ── Language server ─────────────────────────────────────────────────────────
-  server = new LuauLanguageServer(lspOutputChannel);
-  context.subscriptions.push(server);
-
-  server.onStatusChange((status) => {
-    updateLspStatusBar(status);
-  });
-
-  // ── Rojo manager ─────────────────────────────────────────────────────────────
-  rojoManager = new RojoManager(rojoOutputChannel);
-  context.subscriptions.push(rojoManager);
-
-  rojoManager.onStatusChange((status) => {
-    updateRojoStatusBar(status);
-  });
-
-  // ── Register all commands ────────────────────────────────────────────────────
-  registerCommands(context, server, lspOutputChannel, rojoManager);
-
-  // ── Initial status ───────────────────────────────────────────────────────────
-  updateLspStatusBar("starting");
-  updateRojoStatusBar("stopped");
-
-  // ── Start language server ────────────────────────────────────────────────────
-  await server.start(context);
-
-  // ── Auto-start Rojo if configured ────────────────────────────────────────────
-  const config = vscode.workspace.getConfiguration("luau-tools");
-  if (
-    config.get<boolean>("rojo.enabled", true) &&
-    config.get<boolean>("rojo.autoStart", false)
-  ) {
-    lspOutputChannel.appendLine(
-      "[luau-tools] rojo.autoStart is enabled — starting Rojo..."
+  try {
+    // ── LSP status bar (left side) ─────────────────────────────────────────────
+    lspStatusBarItem = vscode.window.createStatusBarItem(
+      vscode.StatusBarAlignment.Left,
+      11
     );
-    await rojoManager.start();
-  }
+    lspStatusBarItem.command = "luau-tools.showOutput";
+    context.subscriptions.push(lspStatusBarItem);
 
-  // ── Config change watcher ────────────────────────────────────────────────────
-  context.subscriptions.push(
-    vscode.workspace.onDidChangeConfiguration(async (e) => {
-      // LSP settings
-      if (
-        e.affectsConfiguration("luau-tools.luauVersion") ||
-        e.affectsConfiguration("luau-tools.lspPath") ||
-        e.affectsConfiguration("luau-tools.diagnosticsEnabled") ||
-        e.affectsConfiguration("luau-tools.completion.enabled")
-      ) {
-        const choice = await vscode.window.showInformationMessage(
-          "Luau Tools: Settings changed. Restart the language server to apply changes.",
-          "Restart Now",
-          "Later"
-        );
-        if (choice === "Restart Now" && server) {
-          await server.restart(context);
-        }
-      }
+    // ── Rojo status bar (right of LSP) ────────────────────────────────────────
+    rojoStatusBarItem = vscode.window.createStatusBarItem(
+      vscode.StatusBarAlignment.Left,
+      10
+    );
+    rojoStatusBarItem.command = "luau-tools.rojoQuickPick";
+    context.subscriptions.push(rojoStatusBarItem);
 
-      // Rojo settings
-      if (
-        e.affectsConfiguration("luau-tools.rojo.enabled") ||
-        e.affectsConfiguration("luau-tools.rojo.rojoPath") ||
-        e.affectsConfiguration("luau-tools.rojo.port") ||
-        e.affectsConfiguration("luau-tools.rojo.projectFile")
-      ) {
-        if (rojoManager && (rojoManager.status === "running" || rojoManager.status === "starting")) {
+    // ── Language server ────────────────────────────────────────────────────────
+    server = new LuauLanguageServer(lspOutputChannel);
+    context.subscriptions.push(server);
+
+    server.onStatusChange((status) => {
+      updateLspStatusBar(status);
+    });
+
+    // ── Rojo manager ───────────────────────────────────────────────────────────
+    rojoManager = new RojoManager(rojoOutputChannel);
+    context.subscriptions.push(rojoManager);
+
+    rojoManager.onStatusChange((status) => {
+      updateRojoStatusBar(status);
+    });
+
+    // ── Register ALL commands — must happen before any await so that commands
+    //    are available even if the LSP download or startup subsequently fails ──
+    registerCommands(context, server, lspOutputChannel, rojoManager);
+
+    context.subscriptions.push(
+      vscode.commands.registerCommand(
+        "luau-tools.rojoQuickPick",
+        showRojoQuickPick
+      )
+    );
+
+    // ── Initial status bar state ───────────────────────────────────────────────
+    updateLspStatusBar("starting");
+    updateRojoStatusBar("stopped");
+
+    // ── Config change watcher ──────────────────────────────────────────────────
+    context.subscriptions.push(
+      vscode.workspace.onDidChangeConfiguration(async (e) => {
+        // LSP settings
+        if (
+          e.affectsConfiguration("luau-tools.luauVersion") ||
+          e.affectsConfiguration("luau-tools.lspPath") ||
+          e.affectsConfiguration("luau-tools.diagnosticsEnabled") ||
+          e.affectsConfiguration("luau-tools.completion.enabled")
+        ) {
           const choice = await vscode.window.showInformationMessage(
-            "Luau Tools: Rojo settings changed. Restart Rojo sync to apply changes.",
+            "Luau Tools: Settings changed. Restart the language server to apply changes.",
             "Restart Now",
             "Later"
           );
-          if (choice === "Restart Now") {
-            await rojoManager.restart();
+          if (choice === "Restart Now" && server) {
+            await server.restart(context);
           }
         }
-      }
-    })
-  );
 
-  lspOutputChannel.appendLine("[luau-tools] Extension activated.");
+        // Rojo settings
+        if (
+          e.affectsConfiguration("luau-tools.rojo.enabled") ||
+          e.affectsConfiguration("luau-tools.rojo.rojoPath") ||
+          e.affectsConfiguration("luau-tools.rojo.port") ||
+          e.affectsConfiguration("luau-tools.rojo.projectFile")
+        ) {
+          if (
+            rojoManager &&
+            (rojoManager.status === "running" ||
+              rojoManager.status === "starting")
+          ) {
+            const choice = await vscode.window.showInformationMessage(
+              "Luau Tools: Rojo settings changed. Restart Rojo sync to apply changes.",
+              "Restart Now",
+              "Later"
+            );
+            if (choice === "Restart Now") {
+              await rojoManager.restart();
+            }
+          }
+        }
+      })
+    );
+
+    lspOutputChannel.appendLine("[luau-tools] Commands registered. Starting LSP...");
+
+    // ── Start language server (async — errors are handled inside start()) ──────
+    await server.start(context);
+
+    // ── Auto-start Rojo if configured ──────────────────────────────────────────
+    const config = vscode.workspace.getConfiguration("luau-tools");
+    if (
+      config.get<boolean>("rojo.enabled", true) &&
+      config.get<boolean>("rojo.autoStart", false)
+    ) {
+      lspOutputChannel.appendLine(
+        "[luau-tools] rojo.autoStart is enabled — starting Rojo..."
+      );
+      await rojoManager.start();
+    }
+
+    lspOutputChannel.appendLine("[luau-tools] Extension activated.");
+  } catch (err) {
+    const message = err instanceof Error
+      ? `${err.message}\n\nStack: ${err.stack ?? "(no stack)"}`
+      : String(err);
+
+    lspOutputChannel.appendLine(`[luau-tools] ACTIVATION ERROR: ${message}`);
+    lspOutputChannel.show(true);
+
+    await vscode.window.showErrorMessage(
+      `Luau Tools failed to activate: ${err instanceof Error ? err.message : String(err)}\n\nSee the "Luau" output channel for details.`
+    );
+  }
 }
 
 export async function deactivate(): Promise<void> {
