@@ -146,6 +146,20 @@ That's fine — Luau is just a language. You don't need Roblox Studio or Rojo to
 
 Luau is a fast, typed superset of Lua 5.1 that works great as a standalone scripting language. If you write Lua for game engines, embedded systems, config files, automation, or anything else — you get the same benefits:
 
+**What do people actually use Lua/Luau for outside Roblox?**
+
+Lua has been a popular embedded scripting language for decades. You'll find it in:
+
+- **Game engines** — [LÖVE2D](https://love2d.org/), [Defold](https://defold.com/), [Solar2D](https://solar2d.com/), and many indie engines use Lua as their scripting layer
+- **Game modding** — World of Warcraft addons, Factorio mods, Garry's Mod, and many moddable games expose a Lua API
+- **Neovim** — the entire Neovim plugin ecosystem is written in Lua. If you write Neovim config or plugins, this extension helps.
+- **Embedded scripting** — Lua is tiny (~200KB) and fast, making it the go-to choice for scripting inside C/C++ applications
+- **Web servers** — [OpenResty](https://openresty.org/) (Lua on nginx) and [Kong](https://konghq.com/) use Lua for high-performance request handling
+- **Automation and tools** — scripts, build pipelines, config-as-code, anything where you want a lightweight scripted layer
+- **Learning** — Lua is one of the cleanest languages to learn programming fundamentals. Luau adds types so you can grow into larger projects.
+
+Luau specifically (vs plain Lua) adds gradual typing, better performance, and safer semantics — making it viable for serious projects that plain Lua struggles with at scale.
+
 - **Syntax highlighting** for `.luau` and `.lua` files
 - **Autocomplete and type inference** — works on any Luau/Lua code, no Roblox context needed
 - **Real-time error diagnostics** as you type
