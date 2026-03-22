@@ -206,9 +206,10 @@
     }
   },
   "scripts": {
-    "vscode:prepublish": "npm run build",
-    "build": "tsc -p tsconfig.json",
-    "watch": "tsc -watch -p tsconfig.json",
+    "vscode:prepublish": "npm run bundle",
+    "build": "tsc -p tsconfig.json --noEmit",
+    "bundle": "esbuild src/extension.ts --bundle --outfile=out/extension.js --external:vscode --format=cjs --platform=node --minify",
+    "watch": "esbuild src/extension.ts --bundle --outfile=out/extension.js --external:vscode --format=cjs --platform=node --watch",
     "clean": "rm -rf out",
     "package": "vsce package",
     "publish": "vsce publish"
@@ -220,6 +221,7 @@
     "@types/node": "^20.12.7",
     "@types/vscode": "^1.85.0",
     "@vscode/vsce": "^2.26.0",
+    "esbuild": "^0.20.0",
     "typescript": "^5.4.5"
   }
 }
