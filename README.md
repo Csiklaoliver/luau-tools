@@ -140,6 +140,37 @@ Place a `.luaurc` in your project root to configure type checking:
 
 ---
 
+## Not a Roblox developer?
+
+That's fine — Luau is just a language. You don't need Roblox Studio or Rojo to use it.
+
+Luau is a fast, typed superset of Lua 5.1 that works great as a standalone scripting language. If you write Lua for game engines, embedded systems, config files, automation, or anything else — you get the same benefits:
+
+- **Syntax highlighting** for `.luau` and `.lua` files
+- **Autocomplete and type inference** — works on any Luau/Lua code, no Roblox context needed
+- **Real-time error diagnostics** as you type
+- **Strict mode** (`"languageMode": "strict"` in `.luaurc`) for full type safety
+- **Zero Roblox setup** — just install the extension and open a file
+
+You can completely ignore the Rojo section. Just write `.luau` files and the language server handles the rest.
+
+**Running Luau outside Roblox**
+
+Luau can be run standalone using [lune](https://github.com/lune-org/lune), a Luau runtime that gives you file I/O, HTTP, processes, and more:
+
+```bash
+# Install lune
+cargo install lune
+# or via aftman / rokit
+
+# Run a script
+lune run src/main.luau
+```
+
+Lune is the recommended way to use Luau as a general-purpose scripting language.
+
+---
+
 ## vs. installing tools manually
 
 | | luau-tools | Rojo alone | luau-lsp alone |
