@@ -32,7 +32,9 @@ if not fs.isFile(inputPath) then
 end
 
 -- Require the page script — it must return a Page object
-local page = require(inputPath)
+-- Lune requires paths to start with ./ or ../
+local requirePath = inputPath:match("^%.%.?/") and inputPath or ("./" .. inputPath)
+local page = require(requirePath)
 
 if type(page) ~= "table" or type(page.Render) ~= "function" then
 	print("Error: your script must return a Page object (e.g. `return page` at the end)")
