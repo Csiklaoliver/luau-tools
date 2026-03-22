@@ -1,5 +1,5 @@
 {
-  "name": "luau-tools",
+  "name": "luau-tools-cli",
   "version": "0.1.0",
   "description": "Full Luau developer experience outside Roblox Studio — type checking, formatting, linting, and more.",
   "author": "csiklaoliver",
