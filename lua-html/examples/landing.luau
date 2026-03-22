@@ -4,7 +4,7 @@
   Output:    examples/landing.html
 ]]
 
-local UI = require("../src/init")
+-- UI is injected automatically by the CLI — no require needed
 local Color = UI.Color
 
 -- ── Page setup ──────────────────────────────────────────────────────────────
@@ -70,11 +70,10 @@ UI.TextLabel {
 	FontWeight   = "700",
 }
 
--- Feature cards row
 local cards = UI.Frame {
-	Parent  = features,
-	Layout  = "row",
-	Gap     = 24,
+	Parent   = features,
+	Layout   = "row",
+	Gap      = 24,
 	MaxWidth = "900px",
 }
 
@@ -89,7 +88,7 @@ local function Card(icon: string, title: string, body: string)
 		Layout          = "column",
 		Gap             = 12,
 	}
-	UI.TextLabel { Parent = card, Text = icon, TextSize = 32 }
+	UI.TextLabel { Parent = card, Text = icon,  TextSize = 32 }
 	UI.TextLabel { Parent = card, HeadingLevel = 3, Text = title, TextColor = Color.fromHex("#1e293b"), TextSize = 18, FontWeight = "600" }
 	UI.TextLabel { Parent = card, Text = body,  TextColor = Color.fromHex("#64748b"), TextSize = 15 }
 end
@@ -116,5 +115,4 @@ UI.TextLabel {
 	TextSize  = 13,
 }
 
--- ── Output ───────────────────────────────────────────────────────────────────
 return page

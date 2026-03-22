@@ -3,8 +3,7 @@
   Run with: lune run cli.luau examples/hello.luau
 ]]
 
-local UI = require("../src/init")
-
+-- UI is injected automatically by the CLI — no require needed
 local page = UI.Page.new()
 page.Title = "Hello World"
 
