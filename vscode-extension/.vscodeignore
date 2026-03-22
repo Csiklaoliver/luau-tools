@@ -1,6 +1,5 @@
+../**
 .vscode/**
-.git/**
-../.git/**
 **/node_modules/**
 src/**
 tsconfig.json
