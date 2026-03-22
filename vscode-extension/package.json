@@ -208,7 +208,7 @@
   "scripts": {
     "vscode:prepublish": "npm run bundle",
     "build": "tsc -p tsconfig.json --noEmit",
-    "bundle": "esbuild src/extension.ts --bundle --outfile=out/extension.js --external:vscode --format=cjs --platform=node --minify",
+    "bundle": "esbuild src/extension.ts --bundle --outfile=out/extension.js --external:vscode --format=cjs --platform=node --minify --sourcemap",
     "watch": "esbuild src/extension.ts --bundle --outfile=out/extension.js --external:vscode --format=cjs --platform=node --watch",
     "clean": "rm -rf out",
     "package": "vsce package",
