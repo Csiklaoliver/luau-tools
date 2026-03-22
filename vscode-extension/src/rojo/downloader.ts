@@ -249,14 +249,18 @@ export async function downloadRojo(
   return binaryPath;
 }
 
+export async function getLatestRojoVersion(): Promise<string> {
+  const release = await fetchJson<GithubRelease>(ROJO_RELEASES_API);
+  return release.tag_name;
+}
+
 export async function ensureRojo(
   progress?: vscode.Progress<{ message?: string; increment?: number }>
 ): Promise<string> {
-  // Check for custom path override first
-  const customPath = vscode.workspace
-    .getConfiguration("luau-tools")
-    .get<string>("rojo.rojoPath");
+  const config = vscode.workspace.getConfiguration("luau-tools");
 
+  // Custom path override — skip all auto-download logic
+  const customPath = config.get<string>("rojo.rojoPath");
   if (customPath && customPath.length > 0) {
     if (!fs.existsSync(customPath)) {
       throw new Error(
@@ -267,12 +271,35 @@ export async function ensureRojo(
     return customPath;
   }
 
+  const autoUpdate = config.get<boolean>("rojo.autoUpdate", true);
   const binaryPath = getRojoBinaryPath();
   const cached = getCachedRojoVersion();
 
-  if (cached && fs.existsSync(binaryPath)) {
-    return binaryPath;
+  if (autoUpdate) {
+    // Check GitHub for the latest version and update if needed
+    try {
+      progress?.report({ message: "Checking for Rojo updates...", increment: 0 });
+      const latestVersion = await getLatestRojoVersion();
+      const needsDownload = !cached || cached.version !== latestVersion || !fs.existsSync(binaryPath);
+      if (needsDownload) {
+        return downloadRojo(progress);
+      }
+    } catch {
+      // If the update check fails (e.g. no internet), fall back to cached binary
+      if (cached && fs.existsSync(binaryPath)) {
+        return binaryPath;
+      }
+      throw new Error(
+        "Failed to check for Rojo updates and no cached binary found.\n" +
+          "Check your internet connection or set luau-tools.rojo.rojoPath to a local Rojo binary."
+      );
+    }
+  } else {
+    // autoUpdate disabled — use cached binary if available, otherwise download once
+    if (!cached || !fs.existsSync(binaryPath)) {
+      return downloadRojo(progress);
+    }
   }
 
-  return downloadRojo(progress);
+  return binaryPath;
 }

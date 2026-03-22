@@ -128,6 +128,11 @@
           "maximum": 65535,
           "description": "Port for Rojo to listen on. Must match the port configured in the Roblox Studio Rojo plugin."
         },
+        "luau-tools.rojo.autoUpdate": {
+          "type": "boolean",
+          "default": true,
+          "description": "Automatically check for and download the latest Rojo release each time Rojo starts. Disable if you want to pin a specific version or manage Rojo yourself."
+        },
         "luau-tools.rojo.rojoPath": {
           "type": "string",
           "default": "",
