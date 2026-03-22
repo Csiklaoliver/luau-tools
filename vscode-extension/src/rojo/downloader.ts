@@ -36,14 +36,17 @@ function getPlatformAssetName(version: string): string {
   // Rojo release asset names: rojo-VERSION-win64.zip, rojo-VERSION-macos-arm64.zip, etc.
   const ver = version.replace(/^v/, "");
   if (platform === "win32") {
-    return `rojo-${ver}-win64.zip`;
+    return arch === "arm64"
+      ? `rojo-${ver}-windows-aarch64.zip`
+      : `rojo-${ver}-windows-x86_64.zip`;
   } else if (platform === "darwin") {
-    if (arch === "arm64") {
-      return `rojo-${ver}-macos-arm64.zip`;
-    }
-    return `rojo-${ver}-macos-x86_64.zip`;
+    return arch === "arm64"
+      ? `rojo-${ver}-macos-aarch64.zip`
+      : `rojo-${ver}-macos-x86_64.zip`;
   } else {
-    return `rojo-${ver}-linux-x86_64.zip`;
+    return arch === "arm64"
+      ? `rojo-${ver}-linux-aarch64.zip`
+      : `rojo-${ver}-linux-x86_64.zip`;
   }
 }
 
