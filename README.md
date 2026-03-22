@@ -1,3 +1,28 @@
+<div align="center">
+
+# 🌙 luau-tools
+
+**The complete Luau IDE experience for VS Code**
+
+[![VS Code Marketplace](https://img.shields.io/visual-studio-marketplace/i/csiklaoliver.luau-tools?label=installs&logo=visualstudiocode)](https://marketplace.visualstudio.com/items?itemName=csiklaoliver.luau-tools)
+[![GitHub Stars](https://img.shields.io/github/stars/Csiklaoliver/luau-tools?style=flat)](https://github.com/Csiklaoliver/luau-tools/stargazers)
+[![License: MIT](https://img.shields.io/badge/License-MIT-purple.svg)](https://github.com/Csiklaoliver/luau-tools/blob/main/LICENSE)
+[![GitHub Release](https://img.shields.io/github/v/release/Csiklaoliver/luau-tools)](https://github.com/Csiklaoliver/luau-tools/releases)
+
+🌐 **[Visit Website →](http://luautools.oliverprojects.tech)**
+
+</div>
+
+---
+
+## 🚀 Quick Start
+
+<!-- TODO: Add demo GIF here -->
+
+1. **Install** — Search `Luau Tools` in VS Code Extensions or press `Ctrl+P` and run `ext install csiklaoliver.luau-tools`
+2. **Open** — Open any folder with `.luau` or `.lua` files. Language server starts automatically.
+3. **Sync** *(optional)* — Run `Luau: Start Rojo Sync` from the Command Palette, then install the Rojo plugin in Roblox Studio.
+
 # luau-tools
 
 [![VS Code Installs](https://img.shields.io/visual-studio-marketplace/i/csiklaoliver.luau-tools?color=blue&style=flat-square&label=VS%20Code%20installs)](https://marketplace.visualstudio.com/items?itemName=csiklaoliver.luau-tools)
