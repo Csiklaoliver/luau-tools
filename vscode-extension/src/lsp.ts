@@ -1,4 +1,3 @@
-import * as path from "path";
 import * as vscode from "vscode";
 import {
   LanguageClient,
@@ -42,7 +41,6 @@ export class LuauLanguageServer {
 
     const config = vscode.workspace.getConfiguration("luau-tools");
     const luauVersion = config.get<string>("luauVersion", "latest");
-    const diagnosticsEnabled = config.get<boolean>("diagnosticsEnabled", true);
     const completionEnabled = config.get<boolean>("completion.enabled", true);
 
     let binaryPath: string;
@@ -68,22 +66,7 @@ export class LuauLanguageServer {
       return;
     }
 
-    const workspaceFolders = vscode.workspace.workspaceFolders;
-    const workspaceRoot = workspaceFolders?.[0]?.uri.fsPath ?? "";
-
-    const args: string[] = ["--lsp"];
-
-    // Pass .luaurc config if it exists
-    const luaurcPath = workspaceRoot
-      ? path.join(workspaceRoot, ".luaurc")
-      : "";
-    if (luaurcPath) {
-      args.push("--settings", luaurcPath);
-    }
-
-    if (!diagnosticsEnabled) {
-      args.push("--no-diagnostics");
-    }
+    const args: string[] = ["lsp"];
 
     const serverOptions: ServerOptions = {
       run: {
